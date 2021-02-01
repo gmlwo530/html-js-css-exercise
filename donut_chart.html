@@ -1,0 +1,236 @@
+<!-- Source: https://evan-moon.github.io/2020/12/12/draw-arc-with-svg-clippath/ -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Donut Chart</title>
+  </head>
+  <body>
+    <!-- 완성본 -->
+    <svg
+      width="500"
+      height="500"
+      viewBox="0 0 100 100"
+      id="animation-donut-svg"
+    ></svg>
+
+    <!-- 
+        a rx ry x축-회전각 큰-호-플래그 쓸기-방향-플래그 dx dy
+
+        "M 50 10"은 렌더 시작점이다. "rx, ry"은 반지름을 의미한다.
+        "dx dy"는 렌더 될 끝점이다. 
+        "x-축 회전각"은 호의 기준이 되는 원을 얼마나 기울일 것이냐를 의미하는데, 그냥 모든 반지름이 동일한 원이면 의미가 없다.
+        
+        svg가 선을 그리는 방향은 기본적으로 반시계 방향이다. 그러므로 시작점이 (50, 10)이고 끝점이 (10, 50)일 때 작은 호가
+        렌더 되는 방향은 하나밖에 없다.(왜냐하면 반시계 방향이므로)
+        "쓸기 플래그"는 호가 그려지는 방향 즉 점이 점을 향하는 방향을 정의해준다.
+
+        "큰 호 플래그"는 작은 호를 그릴지 큰 호를 그릴지 결정한다. 이떄 반시계 방향으로 그려지게 된다는 것을 주의하라
+    -->
+    <svg width="500" height="500" viewBox="0 0 100 100" id="ho-exercise">
+      <path
+        d="
+        M 50 10
+        A 40 40, 0, 0, 0, 10 50"
+        stroke="green"
+        fill="transparent"
+      />
+    </svg>
+
+    <svg viewBox="0 0 100 100" id="donut-svg"></svg>
+
+    <!-- 
+        아무런 단위를 붙히지 않은 숫자는 암묵적으로 px 단위로 정의된다.
+        정사각형의 박스는 500px인데 view="0 0 100 100"을 사용하여 
+        이 뷰박스 내부 세계에는 가로 100px 세로 100px을 가진 좌표를 정의한 것이다.
+        viewBox를 설정하지 않으면 자동으로 width와 height 만큼의 픽셀을 가진 뷰박스를 렌더하는데,
+        좌표가 0~100으로 떨어지는 편이 도형의 좌표를 생각하기 더 쉬우므로 이렇게 정한 것이다.
+
+        이 뷰박스의 중심인 50px(cx) 50px(cy)을 기준으로 반지름이 20px(r)이고
+        선 굵기가 10px(stroke-width)인 원이다.
+    -->
+    <svg width="500" height="500" viewBox="0 0 100 100">
+      <circle
+        cx="50"
+        cy="50"
+        r="20"
+        fill="transparent"
+        stroke="blue"
+        stroke-width="10"
+      />
+    </svg>
+
+    <!-- 
+        stroke-dasharray는 숫자와 공백으로 구분되는 일련의 데이터 셋을 전달받아 점선을 정의한다
+        첫 번째 인자는 선을 얼마나 그릴 것인지를 결정하고
+        두 번째 인자는 공백을 얼마나 그릴 것인지 결정한다.
+        아래 예제는 10px 만큼 선을 그리고 5px 만큼 공백을 그리는것을 반복한다.
+
+        이걸 사용하면 선을 하나 그린 후 나머지는 공백으로 두는 점선을 표현해서 도넛 차트에서
+        여러 데이터의 표현이 가능한 것이다.
+
+        이 코드의 예제를 보면 오른쪽의 선의 길이가 더 긴 것을 알 수 있다.
+        10px이라는 숫자가 원주의 길이와 정확히 맞아 떨어지는 숫자가 아니기 때문이다.
+        
+        점선을 딱 떨어지게 그리고 싶다면 원주의 길이, 즉 원의 둘레 길이를 먼저 알아낸 후에
+        이 길이에 정확히 나누어 떨어지는 값들을 넣어줘야 한다는 것이다.
+
+        아래 자바스크립트에서 값들을 구한다.
+
+        여기서 문제는 SVG는 원을 그릴 때 원점의 오른쪽 방향인 
+        (cx + r, cy) 좌표를 기준점으로 삼아서 원을 렌더한다.
+
+        그래서 아무리 데이터를 렌더할 선이 동일한 기준점에서 렌더 된다.
+        (참고: https://www.notion.so/SVG-37b782e1cd94494f991f23923b609661#2532b2a7cee6422ab001421250e0d15d)
+
+        도넛 차트는 각 데이터가 누적되어 최종적으로는 하나의 원을 그리는 차트기 때문에
+        한 번 데이터를 렌더하고 나면 그 다음 데이터가 렌더될 시작점을 지금까지 렌더된 데이터들의 총 합만큼 밀어줘야 한다.
+        아래 자바스크립트를 보자
+    -->
+    <svg width="500" height="500" viewBox="0 0 100 100">
+      <circle
+        cx="50"
+        cy="50"
+        r="20"
+        fill="transparent"
+        stroke="blue"
+        stroke-width="2"
+        stroke-dasharray="10 5"
+      />
+    </svg>
+
+    <script type="text/javascript">
+      // 1. 원주의 길이(2*pi*r)
+      // 2. 도넛 차트에 그릴 데이터와 총 합의 비율
+
+      // 두 가지를 구한다.
+      const radius = 20;
+      const diameter = 2 * Math.PI * radius;
+
+      const colors = ["#ddd", "#bbb", "#aaa", "#888", "#666"];
+      const dataset = [9, 5, 4, 3, 1];
+      const total = dataset.reduce((r, v) => r + v, 0);
+
+      // svg는 stroke-dashoffset 속성을 통해 점선이 사작되는 부분을
+      // 변경할 수 있다.
+      const acc = dataset.reduce(
+        (result, value) => [...result, result[result.length - 1] + value],
+        [0]
+      ); // [0, 9, 14, 18, 21, 22]
+      // -> 여기서 마지막 원소는 필요 없는 값이다. 왜냐하면 이 값들은 데이터가 렌더될 시작점을 정의하는 값이다.
+      // 맨 마지막 원소인 도넛 차트의 모든 데이터의 렌더가 끝났음을 의미하는 값이다.
+
+      const donutSvg = document.getElementById("donut-svg");
+      dataset.forEach((data, i) => {
+        const ratio = data / total;
+        const offsetRatio = acc[i] / total;
+        const fillSpace = diameter * ratio;
+        const emptySpace = diameter - fillSpace;
+        const offset = offsetRatio * diameter;
+
+        const circle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle"
+        );
+        circle.setAttribute("cx", "50");
+        circle.setAttribute("cy", "50");
+        circle.setAttribute("r", String(radius));
+        circle.setAttribute("fill", "transparent");
+        circle.setAttribute("stroke", colors[i]);
+        circle.setAttribute("stroke-width", "10");
+        circle.setAttribute("stroke-dasharray", `${fillSpace} ${emptySpace}`);
+        circle.setAttribute("stroke-dashoffset", String(-offset));
+
+        donutSvg.appendChild(circle);
+      });
+    </script>
+
+    <script type="text/javascript">
+      // 최대한 가볍게 애니메이션을 구현하는 방법은 2가지가 있다.
+      // 1. SVG의 clippath나 mask를 사용한다.
+      // 2. 각 데이터를 렌더할 때 stroke-dasharray와 stroke-offset 속성에 애니메이션을 준다.
+
+      // 2번 방법처럼 각 데이터에 애니메이션을 적용한다는 것은 첫 번째 데이터의 렌더 애니메이션이 끝나고
+      // 바로 이이서 두 번째 데이터의 렌더 애니메이션이 매끄럽게 재생 되도록 타이밍을 맞추는 것은 어려운 일이다.
+
+      // 그래서 결국 clippath를 사용한다.
+      // 하지만 circle 엘리먼트를 사용하지 못한다.
+
+      // 왜냐하면 원이 완성되기 전까지는 원이 아니기 때문이다.
+      // 도넛 차트를 그릴 때처럼 stroke-dasharray와 stroke-offset 속성을 사용 할 수 없는게 본래 clippath 기능은
+      // 도형의 면과 면이 겹쳐지는 부분을 마스킹하는 것이기 때문에 선을 렌더하는 속성인 stroke-* 속성으로는 마스킹을 구현할 수가 없다.
+
+      // 중간에 생긴 모양은 호를 가진 모양이다.
+
+      // 위에 id="ho-exercise"에서 path로 호를 그리는 방법을 알아보았다.
+      // 문제는 각도 플래그가 없어서 시작점과 끝점의 좌표를 잡기가 힘들아진다.
+      // 좌표들은 무조건 원주를 따라서 위치해야 한다. 어떻게 해야할까?
+      // 이제 이걸 삼각함수로 해결해보자.
+
+      // x: 원의 중심 x 좌표
+      // y: 원의 중심 y 좌표
+      // radius: 원의 반지름
+      // degree: 원점에서 부터 호를 그릴 각도
+      const MAX_DEGREE = 359.9;
+
+      const drawArc = (x, y, radius, startDegree, endDegree) => {
+        const startRadin = (startDegree / 180) * Math.PI;
+        const endRadian = (endDegree / 180) * Math.PI; // radian은 각의 크기를 그저 호의 길이와 반지름의 길이를 사용하여 나타내는 것이다.
+
+        const startCoord = {
+          x: x + radius * Math.cos(startRadin),
+          y: y + radius * Math.sin(startRadin),
+        };
+
+        const finishCoord = {
+          x: x + radius * Math.cos(endRadian),
+          y: y + radius * Math.sin(endRadian),
+        };
+
+        const isLargeArc = endDegree - startDegree > 180 ? 1 : 0;
+        const isEnd = endDegree - startDegree === MAX_DEGREE;
+
+        const d = `M ${startCoord.x} ${startCoord.y} A ${radius} ${radius} 0 ${isLargeArc} 1 ${finishCoord.x} ${finishCoord.y}`; // 360도가 되면 0도랑 일치하기 때문에 render가 되지 않는다.
+        // 그래서 359.9도일때는 Z 명렁어(Close Path(패스 닫기)" 명령어를 통해 쉽게 패스를 마무리할 수 있다. 이 명령어는 현 위치에서 시작점으로 직선을 그린다.)를 통해 시작점으로 선을 그린다.
+        return d;
+      };
+
+      const animationDonutSvg = document.getElementById("animation-donut-svg");
+
+      dataset.forEach((data, i) => {
+        // acc => [0, 9, 14, 18, 21, 22]
+
+        const path = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        path.setAttribute(
+          "d",
+          drawArc(
+            50,
+            50,
+            20,
+            (360 * acc[i]) / total,
+            (360 * acc[i + 1]) / total
+          )
+        );
+        path.setAttribute("fill", "transparent");
+        path.setAttribute("stroke", colors[i]);
+        path.setAttribute("stroke-width", "10");
+
+        animationDonutSvg.appendChild(path);
+
+        const length = path.getTotalLength();
+        path.style.transition = path.style.WebkitTransition = "none";
+        path.style.strokeDasharray = length + " " + length;
+        path.style.strokeDashoffset = length;
+
+        path.getBoundingClientRect();
+        path.style.transition = path.style.WebkitTransition =
+          "stroke-dashoffset 2s ease-in-out";
+        path.style.strokeDashoffset = "0";
+      });
+    </script>
+  </body>
+</html>
