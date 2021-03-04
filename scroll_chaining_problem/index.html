@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overscroll Problem</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <!-- 가독성을 위해 text를 넣는 코드는 app.js에 -->
+    <div class="parent" id="overscroll-behavior"></div>
+    <p class="description">
+      <b>overscroll-behavior</b>은 스크롤 영역의 경계에 도달 했을 때 어떤 행동을
+      할지 정하는 css 속성이다. 예를 들어, 모바일에서 스크롤을 최상단 또는
+      최하단으로 했을 때 바운스 이펙트를 제공한다. 또 다른 예로 dialog 영역
+      스크롤이 경계에 닿았을 때 아래 놓인 페이지가 스크롤 하기 시작한다. 이걸
+      scroll chaining이라고 한다. <b>overscroll-behavior</b> 속성으로 scroll
+      changing을 없앨 수 있다. <br /><br />
+      - "auto": 일반적인 scroll overflow behavior가 발생하게 한다.<br />
+      - "contain": 세팅된 scroll overflow behavior를 실행하는데, 이웃 요소들에
+      scroll chaning은 막는다. <br />
+      - "none": 이웃 요소들에 scroll chaning을 막는다. <br /><br />
+      아쉽게도 이 속성은 chrome, firefox, opera 정도의 브라우저에서만 완벽하게
+      지원한다.
+      <a
+        href="https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior#browser_compatibility"
+        >호환성 참고</a
+      >
+    </p>
+    <hr />
+
+    <div class="parent"></div>
+    <p class="description">설명</p>
+    <hr />
+
+    <div class="parent"></div>
+    <p class="description">설명</p>
+    <hr />
+
+    <div class="parent"></div>
+    <p class="description">설명</p>
+    <hr />
+
+    <div class="parent"></div>
+    <p class="description">설명</p>
+    <hr />
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
